@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+
+<!-- 
+1) 상품등록
+2) 등록된 모든 상품정보를 검색
+3) 통돌이~~ 세탁기, 드럼~~ 세탁기, ~~ 공기청정기,
+   이럴 때 like %, _      == like연산자와 와일드카드 사용
+   ==
+   '세탁기' 라는 단어가 포함된 제품을 검색
+4) 제조사별 검색
+5) 제품 정보 수정하기
+-->
+<mapper namespace="ns.sql.MyProductMapper">
+	<!-- 
+		화면으로 부터 받은 form값을 가지고vo가 생성됨.
+		(이때, id 값은 들어 있지 않다...o값을 가지고 있다...나머지 값은 에어콘, 삼성, 2300000)
+		vo를 DB에 insert시키면 DB에서id값은 자동증가되어서...4가 되어져 있다.
+		
+		결론 
+		vo의 데이터와 DB 테이블이 row가 동기화, 일치되는 상황이 이럴때 발생한다.
+		
+		정리
+		INSERT문에서 발생하는 문제로...
+		DB에서 자동증가하는 값이 하필 PK일때 발생하는 문제이다.
+	 -->
+   <insert id="addProduct" parameterType="myProduct" useGeneratedKeys="true" keyProperty="id">
+      INSERT
+      INTO myproduct (name, maker, price) VALUES (#{name},#{maker},#{price})
+   </insert>
+      
+   <sql id="select-myproduct">
+      SELECT id, name, maker, price FROM myproduct
+   </sql>
+   <select id="findProducts" resultType="myproduct">
+      <include refid="select-myproduct"></include>
+   </select>
+     
+   <!-- 특정한 상품명이 들어가는 제품검색.. -->
+   <select id="findProductByName" resultType="myproduct" parameterType="string">
+      <include refid="select-myproduct"></include>
+      WHERE name LIKE '%' #{value} '%'
+   </select>
+     
+   <select id="findProductByMaker" resultType="myproduct" parameterType="string">
+      <include refid="select-myproduct"></include>
+      WHERE maker LIKE #{value}
+   </select>
+      
+   <update id="updateProduct">
+      UPDATE myproduct SET name=#{name}, maker=#{maker}, price=#{price}
+      WHERE id=#{id}
+   </update>
+</mapper>
